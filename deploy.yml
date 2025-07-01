@@ -1,0 +1,69 @@
+- name: Установка webapp CGI через Ansible
+  hosts: localhost
+  become: yes
+
+  vars:
+    webapp_dir: /var/www/webapp
+
+  tasks:
+    - name: Установить необходимые пакеты
+      apt:
+        name:
+          - apache2
+          - python3
+          - python3-pip
+          - python3-pil   # <--- это Pillow для Python3
+        update_cache: true
+
+    - name: Создать структуру директорий
+      file:
+        path: "{{ webapp_dir }}/{{ item }}"
+        state: directory
+        owner: www-data
+        group: www-data
+        mode: '0755'
+      loop:
+        - cgi-bin
+        - converted
+        - html
+        - original
+
+    - name: Скопировать CGI-скрипт
+      copy:
+        src: files/converter
+        dest: "{{ webapp_dir }}/cgi-bin/converter"
+        owner: www-data
+        group: www-data
+        mode: '0755'
+
+    - name: Скопировать HTML-форму
+      copy:
+        src: files/default.html
+        dest: "{{ webapp_dir }}/html/default.html"
+        owner: www-data
+        group: www-data
+        mode: '0644'
+
+    - name: Скопировать конфиг Apache
+      copy:
+        src: files/webapp.conf
+        dest: /etc/apache2/sites-available/webapp.conf
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Включить модуль cgid в Apache (для event/threaded MPM)
+      apache2_module:
+        name: cgid
+        state: present
+
+
+    - name: Включить сайт
+      command: a2ensite webapp
+      args:
+        creates: /etc/apache2/sites-enabled/webapp.conf
+
+    - name: Перезапустить Apache
+      service:
+        name: apache2
+        state: restarted

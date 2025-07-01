@@ -1,0 +1,53 @@
+#!/usr/bin/env python3
+import cgi, os, uuid
+from PIL import Image
+
+print("Content-Type: text/html; charset=utf-8\n")   # <-- правильная кодировка
+
+form = cgi.FieldStorage()
+if "file" not in form:
+    print("<h1>Ошибка: Файл не загружен.</h1><a href='/'>На главную</a>")
+    exit()
+
+fileitem = form["file"]
+if not fileitem.filename:
+    print("<h1>Ошибка: Файл не выбран.</h1><a href='/'>На главную</a>")
+    exit()
+
+filename = fileitem.filename.lower()
+if not (filename.endswith(".jpg") or filename.endswith(".jpeg") or filename.endswith(".png")):
+    print("<h1>Ошибка: Только JPG и PNG!</h1><a href='/'>На главную</a>")
+    exit()
+
+uid = str(uuid.uuid4())
+ext = ".jpg" if filename.endswith("jpg") or filename.endswith("jpeg") else ".png"
+base = uid + ext
+orig_path = f"/var/www/webapp/original/{base}"
+conv_path = f"/var/www/webapp/converted/{base}"
+
+with open(orig_path, 'wb') as f:
+    f.write(fileitem.file.read())
+
+# Конвертация в ч/б
+img = Image.open(orig_path).convert('L')
+img.save(conv_path)
+
+domain = os.environ.get("HTTP_HOST", "localhost")
+
+print(f"""
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Результат</title>
+</head>
+<body>
+<h2>Конвертация завершена!</h2>
+<ul>
+  <li>Оригинал: <a href="http://{domain}/original/{base}">{base}</a></li>
+  <li>Черно-белое: <a href="http://{domain}/converted/{base}">{base}</a></li>
+</ul>
+<a href="/">На главную</a>
+</body>
+</html>
+""")
+
