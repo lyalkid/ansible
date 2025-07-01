@@ -4,6 +4,7 @@
 
   vars:
     webapp_dir: /var/www/webapp
+    domain: domain.com
 
   tasks:
     - name: Установить необходимые пакеты
@@ -28,9 +29,9 @@
         - html
         - original
 
-    - name: Скопировать CGI-скрипт
-      copy:
-        src: files/converter
+    - name: Скопировать CGI-скрипт из шаблона и подставить домен
+      template:
+        src: converter.j2
         dest: "{{ webapp_dir }}/cgi-bin/converter"
         owner: www-data
         group: www-data

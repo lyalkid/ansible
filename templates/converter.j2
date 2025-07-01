@@ -2,6 +2,11 @@
 import cgi, os, uuid
 from PIL import Image
 
+domain = "{{domain}}"
+
+print(f'Оригинал: <a href="http://{domain}/original/{base}">{base}</a>')
+
+
 print("Content-Type: text/html; charset=utf-8\n")   # <-- правильная кодировка
 
 form = cgi.FieldStorage()
