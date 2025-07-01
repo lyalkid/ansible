@@ -12,7 +12,7 @@
           - apache2
           - python3
           - python3-pip
-          - python3-pil   # <--- это Pillow для Python3
+          - python3-pil   
         update_cache: true
 
     - name: Создать структуру директорий
