@@ -2,12 +2,7 @@
 import cgi, os, uuid
 from PIL import Image
 
-domain = "{{domain}}"
-
-print(f'Оригинал: <a href="http://{domain}/original/{base}">{base}</a>')
-
-
-print("Content-Type: text/html; charset=utf-8\n")   # <-- правильная кодировка
+print("Content-Type: text/html; charset=utf-8\n")
 
 form = cgi.FieldStorage()
 if "file" not in form:
@@ -30,14 +25,21 @@ base = uid + ext
 orig_path = f"/var/www/webapp/original/{base}"
 conv_path = f"/var/www/webapp/converted/{base}"
 
-with open(orig_path, 'wb') as f:
-    f.write(fileitem.file.read())
+try:
+    with open(orig_path, 'wb') as f:
+        f.write(fileitem.file.read())
+except Exception as e:
+    print(f"<h1>Ошибка при сохранении файла: {e}</h1><a href='/'>На главную</a>")
+    exit()
 
-# Конвертация в ч/б
-img = Image.open(orig_path).convert('L')
-img.save(conv_path)
+try:
+    img = Image.open(orig_path).convert('L')
+    img.save(conv_path)
+except Exception as e:
+    print(f"<h1>Ошибка при обработке изображения: {e}</h1><a href='/'>На главную</a>")
+    exit()
 
-domain = os.environ.get("HTTP_HOST", "localhost")
+domain = "{{ domain }}"
 
 print(f"""
 <html>
@@ -55,4 +57,3 @@ print(f"""
 </body>
 </html>
 """)
-

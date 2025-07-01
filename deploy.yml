@@ -4,7 +4,7 @@
 
   vars:
     webapp_dir: /var/www/webapp
-    domain: domain.com
+    domain: azamat.domain.com
 
   tasks:
     - name: Установить необходимые пакеты
